@@ -5,8 +5,8 @@
   ~ Created by maJid~ASGARI
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,7 +15,7 @@
     <version>0.1</version>
     <name>Ner Wrapper</name>
     <packaging>jar</packaging>
-    <description>Ner Wrapper: A Java wrapper for running Majid Asgari's NER Engine on Windows and Linux.<description>
+    <description>Ner Wrapper: A Java wrapper for running Majid Asgari's NER Engine on Windows and Linux.</description>
     <properties>
         <junit.version>4.11</junit.version>
         <collections.version>4.0</collections.version>
@@ -23,7 +23,8 @@
         <cli.version>1.2</cli.version>
         <lang.version>3.3.2</lang.version>
         <log4j.version>2.1</log4j.version>
-        <nlpPack.version>0.8</nlpPack>
+        <nlpPack.version>0.8</nlpPack.version>
+        <namer.version>0.0.1</namer.version>
     </properties>
 
     <build>
@@ -51,7 +52,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>
-                                iust.ac.ir.nlp.ner.wrapper.Runner
+                                ir.ac.iust.nlp.ner.wrapper.Runner
                             </mainClass>
                         </manifest>
                     </archive>
@@ -64,7 +65,7 @@
                     <finalName>ner-wrapper</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>iust.ac.ir.nlp.jhazm.Runner</mainClass>
+                            <mainClass>ir.ac.iust.nlp.ner.wrapper.Runner</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -107,6 +108,13 @@
             <version>${nlpPack.version}</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/local-libs/nlp-pack-0.8.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>ir.ac.iust.nlp</groupId>
+            <artifactId>simple-namer</artifactId>
+            <version>${namer.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/local-libs/namer-0.0.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
