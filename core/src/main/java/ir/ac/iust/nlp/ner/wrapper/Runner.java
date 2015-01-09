@@ -2,8 +2,12 @@ package ir.ac.iust.nlp.ner.wrapper;
 
 import ir.ac.iust.nlp.ner.wrapper.io.FileHandler;
 import iust.nlp.nlppack.Main;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +30,11 @@ public class Runner {
         FileHandler.prepareFile("normal_ner", files);
         FileHandler.prepareFile("pos", "model_98_accuracy");
         FileHandler.prepareFile(".", "organizations", "persian names", "sample.txt", "features");
+        if (File.separator.equals("/")) {
+            for (File file : new File("resources/linux").listFiles()) {
+                file.setExecutable(true);
+            }
+        }
     }
 
     public static void main(final String[] args) throws IOException, URISyntaxException {
@@ -41,7 +50,7 @@ public class Runner {
         return input;
     }
 
-    public static void namedEntityRecognize(boolean named, Path path) throws IOException {
+    public static void namedEntityRecognize(boolean named, Path path) throws IOException, InterruptedException {
         Path input = Paths.get(path.toString() + "_folder", path.toFile().getName());
         if (!Files.exists(input.getParent()))
             Files.createDirectories(input.getParent());
@@ -70,19 +79,27 @@ public class Runner {
             Main.main(array("NerFeatureGenerator", "-ulb", NAMED, CRF_DATA, "no"));
         } else
             Main.main(array("NerFeatureGenerator", "-ilb", NORM, CRF_DATA, "no"));
-        String MODEL_FOLDER = named ? Paths.get("resources", "named_ner").toString()
-                : Paths.get("resources", "normal_ner").toString();
-        runCommand("crf", "-prd", "-d", MODEL_FOLDER, "-o", "option.txt");
 
-        String UNTAGGED = pathAddress + ".untagged";
-        Files.move(Paths.get(MODEL_FOLDER, "data.untagged"), Paths.get(UNTAGGED), StandardCopyOption.REPLACE_EXISTING);
-        String MODEL = Paths.get(MODEL_FOLDER, "data.untagged.model").toString();
+        String PREDICTED = predictCrf(named, input.getParent());
         String FARSI_MODEL = pathAddress + ".out";
-        runCommand("filemixer", "i=" + FARSI_NORM, "i2=" + MODEL, "o=" + FARSI_MODEL, "c=0:0;1:-1");
+        Main.main(array("filemixer", "i1=" + FARSI_NORM, "i2=" + PREDICTED, "o=" + FARSI_MODEL, "c=0:0;1:-1"));
     }
 
-    private static void runCommand(String... commands) throws IOException {
-        runCommandInWindows(commands);
+    private synchronized static String predictCrf(boolean named, Path folderOfFile) throws IOException, InterruptedException {
+        Path CRF_DATA = folderOfFile.resolve("data.untagged");
+        Path MODEL_FOLDER = named ? Paths.get("resources", "named_ner")
+                : Paths.get("resources", "normal_ner");
+        Files.copy(CRF_DATA, MODEL_FOLDER.resolve("data.untagged"), StandardCopyOption.REPLACE_EXISTING);
+        runCommand("crf", "-prd", "-d", MODEL_FOLDER.toFile().getAbsolutePath(), "-o", "option.txt");
+        Files.move(MODEL_FOLDER.resolve("data.untagged.model"), folderOfFile.resolve("data.untagged.model"),
+                StandardCopyOption.REPLACE_EXISTING);
+        return folderOfFile.resolve("data.untagged.model").toString();
+    }
+
+    private static void runCommand(String... commands) throws IOException, InterruptedException {
+        if (File.separator.equals("\\"))
+            runCommandInWindows(commands);
+        else runCommandInLinux(commands);
     }
 
     private static void runCommandInWindows(String... commands) throws IOException {
@@ -98,5 +115,21 @@ public class Runner {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void runCommandInLinux(String... commands) throws IOException, InterruptedException {
+        commands[0] = FileHandler.getPath("linux", commands[0]).toFile().getAbsolutePath();
+        System.out.println(StringUtils.join(commands, " "));
+        Process p = Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", StringUtils.join(commands, " ")});
+        int code = p.waitFor();
+        System.out.println("code: " + code);
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(p.getInputStream()));
+        StringBuffer output = new StringBuffer();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line).append("\n");
+        }
+        System.out.println(output);
     }
 }
