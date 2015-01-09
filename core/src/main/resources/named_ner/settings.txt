@@ -1,0 +1,10 @@
+enable true
+action portion
+#action stats
+#action delete_seqs
+#action all
+portion 10
+input input.txt
+test test.txt
+train train.txt
+retain_len_seq 800
