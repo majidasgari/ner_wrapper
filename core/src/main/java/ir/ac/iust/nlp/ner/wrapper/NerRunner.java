@@ -38,7 +38,7 @@ public class NerRunner {
                 file.setExecutable(true);
             }
         }
-        SimpleNamer.prepare(FileHandler.getPath(".", "persian_names.txt"), "PERS", false);
+        SimpleNamer.prepare(FileHandler.getPath(".", "persian_names.txt"), "PERS", true);
         SimpleNamer.prepare(FileHandler.getPath(".", "organizations.txt"), "ORG", true);
         prepared = true;
     }
