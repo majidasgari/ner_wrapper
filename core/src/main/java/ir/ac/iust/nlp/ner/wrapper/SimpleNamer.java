@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -16,13 +17,14 @@ public class SimpleNamer {
 
     //tag => (first split, {other splits})
     static private HashMap<String, HashMap<String, ArrayList<String[]>>> tagNames = new HashMap<>();
+    static private HashMap<String, HashSet<String>> fullNames = new HashMap<>();
     static private HashMap<String, Path> gazeteers = new HashMap<>();
     static private HashMap<String, Boolean> participate = new HashMap<>();
 
     public static boolean add(String tag, String name) throws IOException {
         if (!gazeteers.containsKey(tag)) return false;
         HashMap<String, ArrayList<String[]>> names = tagNames.get(tag);
-        boolean success = addToList(participate.get(tag), names, name);
+        boolean success = addToList(participate.get(tag), names, fullNames.get(tag), name);
         if (!success) return false;
         Path path = gazeteers.get(tag);
         String content = new String(Files.readAllBytes(path), Charset.forName("UTF-8"));
@@ -37,8 +39,10 @@ public class SimpleNamer {
         if (names != null) return names;
         names = new HashMap<>();
         List<String> lines = Files.readAllLines(gazeteer, Charset.forName("UTF-8"));
+        HashSet<String> fullNameSet = new HashSet<>();
+        fullNames.put(tag, fullNameSet);
         for (String line : lines) {
-            addToList(participateOneWordNames, names, line);
+            addToList(participateOneWordNames, names, fullNameSet, line);
         }
         gazeteers.put(tag, gazeteer);
         tagNames.put(tag, names);
@@ -46,8 +50,12 @@ public class SimpleNamer {
         return names;
     }
 
-    private static boolean addToList(boolean participateOneWordNames, HashMap<String, ArrayList<String[]>> names, String line) {
+    private static boolean addToList(boolean participateOneWordNames,
+                                     HashMap<String, ArrayList<String[]>> names,
+                                     HashSet<String> fullNames,
+                                     String line) {
         if (line.trim().length() == 0) return false;
+        if (fullNames.contains(line)) return false;
         String[] allSplits = line.trim().split("\\s+");
         String[] otherSplits;
         if (participateOneWordNames && allSplits.length == 1 && allSplits[0].trim().length() == 0) return false;
@@ -64,6 +72,7 @@ public class SimpleNamer {
             names.put(allSplits[0], value);
         }
         value.add(otherSplits);
+        fullNames.add(line);
         return true;
     }
 
