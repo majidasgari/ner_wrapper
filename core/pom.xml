@@ -52,7 +52,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>
-                                ir.ac.iust.nlp.ner.wrapper.Runner
+                                ir.ac.iust.nlp.ner.wrapper.NerRunner
                             </mainClass>
                         </manifest>
                     </archive>
@@ -65,7 +65,7 @@
                     <finalName>ner-wrapper</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>ir.ac.iust.nlp.ner.wrapper.Runner</mainClass>
+                            <mainClass>ir.ac.iust.nlp.ner.wrapper.NerRunner</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -108,13 +108,6 @@
             <version>${nlpPack.version}</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/local-libs/nlp-pack-0.8.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>ir.ac.iust.nlp</groupId>
-            <artifactId>simple-namer</artifactId>
-            <version>${namer.version}</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/local-libs/namer-0.0.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

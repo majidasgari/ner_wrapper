@@ -17,9 +17,12 @@ import java.nio.file.StandardCopyOption;
 /**
  * Created by maJid~ASGARI on 1/9/2015.
  */
-public class Runner {
+public class NerRunner {
 
-    private static void prepareFiles() {
+    public static boolean prepared = false;
+
+    private static void prepareFiles() throws IOException {
+        if (prepared) return;
         FileHandler.setCopyRoot("resources");
         String[] files = new String[]{"crf", "hunpos-tag", "hunpos-train"};
         FileHandler.prepareFile("linux", files);
@@ -29,16 +32,18 @@ public class Runner {
         FileHandler.prepareFile("named_ner", files);
         FileHandler.prepareFile("normal_ner", files);
         FileHandler.prepareFile("pos", "model_98_accuracy");
-        FileHandler.prepareFile(".", "organizations", "persian names", "sample.txt", "features");
+        FileHandler.prepareFile(".", "organizations.txt", "persian_names.txt", "sample.txt", "features");
         if (File.separator.equals("/")) {
             for (File file : new File("resources/linux").listFiles()) {
                 file.setExecutable(true);
             }
         }
+        SimpleNamer.prepare(FileHandler.getPath(".", "persian_names.txt"), "PERS", false);
+        SimpleNamer.prepare(FileHandler.getPath(".", "organizations.txt"), "ORG", true);
+        prepared = true;
     }
 
     public static void main(final String[] args) throws IOException, URISyntaxException {
-        prepareFiles();
         try {
             namedEntityRecognize(false, Paths.get("resources", "sample.txt"));
         } catch (Exception exp) {
@@ -50,7 +55,8 @@ public class Runner {
         return input;
     }
 
-    public static void namedEntityRecognize(boolean named, Path path) throws IOException, InterruptedException {
+    public static Path namedEntityRecognize(boolean named, Path path) throws IOException, InterruptedException {
+        prepareFiles();
         Path input = Paths.get(path.toString() + "_folder", path.toFile().getName());
         if (!Files.exists(input.getParent()))
             Files.createDirectories(input.getParent());
@@ -83,6 +89,9 @@ public class Runner {
         String PREDICTED = predictCrf(named, input.getParent());
         String FARSI_MODEL = pathAddress + ".out";
         Main.main(array("filemixer", "i1=" + FARSI_NORM, "i2=" + PREDICTED, "o=" + FARSI_MODEL, "c=0:0;1:-1"));
+        SimpleNamer.manipulateFile(Paths.get(FARSI_MODEL), "PERS");
+        SimpleNamer.manipulateFile(Paths.get(FARSI_MODEL), "ORG");
+        return input.getParent();
     }
 
     private synchronized static String predictCrf(boolean named, Path folderOfFile) throws IOException, InterruptedException {
