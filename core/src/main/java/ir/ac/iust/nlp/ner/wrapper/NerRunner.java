@@ -97,7 +97,7 @@ public class NerRunner {
                 Main.main(array("pnamemarker", "i=" + NORM, "o=" + NAMED, "cc=2", "tc=1", "dc=0", "-t"));
                 Main.main(array("NerFeatureGenerator", "-ulb", NAMED, CRF_DATA, "no"));
             } else
-                Main.main(array("NerFeatureGenerator", "-ilb", NORM, CRF_DATA, "no"));
+                Main.main(array("NerFeatureGenerator", "-ulb", NORM, CRF_DATA, "no"));
         return input;
     }
 
